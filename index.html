@@ -337,7 +337,7 @@
   <div class="card">
     <p class="card-title">Coste</p>
     <div class="cost-input-wrap" id="cost_wrap">
-      <input type="number" id="cost" value="100" min="0" step="0.01" inputmode="decimal" aria-label="Coste en euros" />
+      <input type="number" id="cost" value="0" min="0" step="0.01" inputmode="decimal" aria-label="Coste en euros" />
       <span class="currency">€</span>
     </div>
     <p class="input-error-msg" id="cost_error">El coste no puede ser negativo</p>
@@ -352,7 +352,7 @@
         <label for="margin_dist">Tu margen → distribuidor (TSTD)</label>
         <span class="slider-badge" id="val_dist">30%</span>
       </div>
-      <input type="range" id="margin_dist" min="1" max="70" step="1" value="30" />
+      <input type="range" id="margin_dist" min="1" max="70" step="1" value="40" />
     </div>
 
     <div class="slider-block">
@@ -360,7 +360,7 @@
         <label for="margin_canal">Margen tienda → cliente (PVP)</label>
         <span class="slider-badge" id="val_canal">20%</span>
       </div>
-      <input type="range" id="margin_canal" min="1" max="70" step="1" value="20" />
+      <input type="range" id="margin_canal" min="1" max="70" step="1" value="30" />
     </div>
 
     <div class="slider-block">
