@@ -295,6 +295,14 @@
       </div>
       <input type="range" id="margin_canal" min="1" max="70" step="1" value="20" />
     </div>
+
+    <div class="slider-block">
+      <div class="slider-header">
+        <label for="iva">IVA</label>
+        <span class="slider-badge" id="val_iva">21%</span>
+      </div>
+      <input type="range" id="iva" min="0" max="100" step="1" value="21" />
+    </div>
   </div>
 
   <div class="results-grid">
@@ -344,6 +352,12 @@
         <p class="cname">PVP</p>
         <p class="cprice" id="c_pvp">—</p>
       </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-step">
+        <p class="cname">PVP + IVA</p>
+        <p class="cprice" id="c_pvpiva">—</p>
+        <p class="cdelta" id="c_ivaval">—</p>
+      </div>
     </div>
   </div>
 
@@ -363,9 +377,11 @@
     const cost = parseFloat(document.getElementById('cost').value) || 0;
     const mDist = parseInt(document.getElementById('margin_dist').value);
     const mCanal = parseInt(document.getElementById('margin_canal').value);
+    const ivaVal = parseInt(document.getElementById('iva').value);
 
     document.getElementById('val_dist').textContent = mDist + '%';
     document.getElementById('val_canal').textContent = mCanal + '%';
+    document.getElementById('val_iva').textContent = ivaVal + '%';
 
     const tstd = cost * (1 + mDist / 100);
     const pvp = tstd * (1 + mCanal / 100);
@@ -390,14 +406,19 @@
     document.getElementById('m_total_eur').textContent = '+' + fmt(bTotal);
 
     // Cadena
+    const IVA = ivaVal / 100;
+    const pvpIva = pvp * (1 + IVA);
     document.getElementById('c_cost').textContent = fmt(cost);
     document.getElementById('c_tstd').textContent = fmt(tstd);
     document.getElementById('c_pvp').textContent = fmt(pvp);
+    document.getElementById('c_pvpiva').textContent = fmt(pvpIva);
+    document.getElementById('c_ivaval').textContent = '+' + fmt(pvp * IVA) + ' IVA';
   }
 
   document.getElementById('cost').addEventListener('input', recalc);
   document.getElementById('margin_dist').addEventListener('input', recalc);
   document.getElementById('margin_canal').addEventListener('input', recalc);
+  document.getElementById('iva').addEventListener('input', recalc);
 
   recalc();
 
