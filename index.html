@@ -389,7 +389,7 @@
       <p class="rprice-discount" id="r_tstd_dto" style="display:none"></p>
     </div>
     <div class="result-card blue">
-      <p class="rlabel">PVP <span style="font-size:9px;font-weight:500;letter-spacing:0.03em;opacity:0.7;">s/IVA</span></p>
+      <p class="rlabel">PVP <span style="font-size:9px;font-weight:500;letter-spacing:0.03em;opacity:0.7;">c/IVA</span></p>
       <p class="rprice" id="r_pvp">—</p>
     </div>
   </div>
@@ -504,7 +504,8 @@
     } else {
       dtoEl.style.display = 'none';
     }
-    document.getElementById('r_pvp').textContent = fmt(pvp);
+    const pvpIva = pvp * (1 + ivaVal / 100);
+    document.getElementById('r_pvp').textContent = fmt(pvpIva);
 
     // Píldoras
     document.getElementById('m_tuyo').textContent     = pct(mDist);
@@ -515,7 +516,6 @@
     document.getElementById('m_total_eur').textContent = '+' + fmt(bTotal);
 
     // Cadena
-    const pvpIva = pvp * (1 + ivaVal / 100);
     document.getElementById('c_cost').textContent   = fmt(cost);
     document.getElementById('c_tstd').textContent   = fmt(tstd);
     document.getElementById('c_pvp').textContent    = fmt(pvp);
