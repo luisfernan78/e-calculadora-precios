@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de precios</title>
+  <meta name="theme-color" content="#111111" />
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f5f4;
+      --surface: #ffffff;
+      --surface2: #f0efee;
+      --text: #111111;
+      --text2: #6b6b69;
+      --accent: #cc2200;
+      --accent-bg: #fff0ed;
+      --accent-text: #cc2200;
+      --blue: #1a56cc;
+      --blue-bg: #eef3ff;
+      --blue-text: #1a56cc;
+      --green: #1a7a3a;
+      --green-bg: #edfaf2;
+      --green-text: #1a7a3a;
+      --border: rgba(0,0,0,0.1);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111111;
+        --surface: #1e1e1e;
+        --surface2: #2a2a2a;
+        --text: #f0efee;
+        --text2: #888884;
+        --accent: #ff4422;
+        --accent-bg: #2a1410;
+        --accent-text: #ff6644;
+        --blue: #4d88ff;
+        --blue-bg: #0e1a33;
+        --blue-text: #4d88ff;
+        --green: #2db85a;
+        --green-bg: #0a1f12;
+        --green-text: #2db85a;
+        --border: rgba(255,255,255,0.1);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding: 0 0 3rem;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header .logo {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    header .logo svg { width: 16px; height: 16px; fill: white; }
+    header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+
+    .container { max-width: 480px; margin: 0 auto; padding: 1.25rem 1rem; }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text2); margin-bottom: 1rem;
+    }
+
+    .cost-input-wrap {
+      display: flex; align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .cost-input-wrap input {
+      flex: 1; border: none; background: transparent;
+      color: var(--text); font-size: 28px; font-weight: 500;
+      padding: 0.75rem 1rem; outline: none; width: 0;
+      -moz-appearance: textfield;
+    }
+    .cost-input-wrap input::-webkit-outer-spin-button,
+    .cost-input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .cost-input-wrap .currency {
+      font-size: 22px; font-weight: 500;
+      color: var(--text2); padding-right: 1rem;
+    }
+
+    .slider-block { margin-bottom: 1.25rem; }
+    .slider-block:last-child { margin-bottom: 0; }
+
+    .slider-header {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 8px;
+    }
+    .slider-header label { font-size: 14px; color: var(--text); }
+
+    .slider-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text);
+      min-width: 50px; text-align: center;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 2px;
+      background: var(--surface2); border: 1px solid var(--border);
+      outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--text);
+      border: 3px solid var(--surface);
+      box-shadow: 0 0 0 1px var(--border);
+      cursor: pointer;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--text);
+      border: 3px solid var(--surface);
+      box-shadow: 0 0 0 1px var(--border);
+      cursor: pointer;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .result-card {
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+    }
+    .result-card.neutral { background: var(--surface2); }
+    .result-card.blue { background: var(--blue-bg); }
+    .result-card.accent { background: var(--accent-bg); }
+
+    .result-card .rlabel {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .neutral .rlabel { color: var(--text2); }
+    .blue .rlabel { color: var(--blue-text); }
+    .accent .rlabel { color: var(--accent-text); }
+
+    .result-card .rprice {
+      font-size: 22px; font-weight: 600;
+      letter-spacing: -0.02em; margin-bottom: 2px;
+    }
+    .neutral .rprice { color: var(--text); }
+    .blue .rprice { color: var(--blue-text); }
+    .accent .rprice { color: var(--accent-text); }
+
+    .result-card .rmeta { font-size: 11px; }
+    .neutral .rmeta { color: var(--text2); }
+    .blue .rmeta { color: var(--blue-text); }
+    .accent .rmeta { color: var(--accent-text); }
+
+    /* Margen resumen — 3 columnas */
+    .margins-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .margin-pill {
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+    }
+    .margin-pill.neutral { background: var(--surface2); }
+    .margin-pill.blue { background: var(--blue-bg); }
+    .margin-pill.green { background: var(--green-bg); }
+
+    .margin-pill .mlabel {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .margin-pill.neutral .mlabel { color: var(--text2); }
+    .margin-pill.blue .mlabel { color: var(--blue-text); }
+    .margin-pill.green .mlabel { color: var(--green-text); }
+
+    .margin-pill .mval {
+      font-size: 20px; font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .margin-pill.neutral .mval { color: var(--text); }
+    .margin-pill.blue .mval { color: var(--blue-text); }
+    .margin-pill.green .mval { color: var(--green-text); }
+
+    .margin-pill .msub {
+      font-size: 13px; font-weight: 500; margin-top: 2px;
+    }
+    .margin-pill.neutral .msub { color: var(--text2); }
+    .margin-pill.blue .msub { color: var(--blue-text); }
+    .margin-pill.green .msub { color: var(--green-text); }
+
+    /* Cadena */
+    .chain-steps {
+      display: flex; align-items: stretch; gap: 0;
+    }
+    .chain-step { flex: 1; text-align: center; }
+    .chain-step .cname {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text2); margin-bottom: 4px;
+    }
+    .chain-step .cprice {
+      font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px;
+    }
+    .chain-step .cdelta { font-size: 11px; color: var(--text2); }
+    .chain-arrow {
+      display: flex; align-items: center;
+      padding: 0 4px; color: var(--text2); font-size: 14px; flex-shrink: 0;
+    }
+
+    .tip {
+      font-size: 12px; color: var(--text2);
+      text-align: center; padding-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 16 16"><path d="M2 12 L8 2 L14 12 Z"/></svg>
+  </div>
+  <h1>Calculadora de precios</h1>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <p class="card-title">Coste</p>
+    <div class="cost-input-wrap">
+      <input type="number" id="cost" value="100" min="0" step="0.01" inputmode="decimal" aria-label="Coste en euros" />
+      <span class="currency">€</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Márgenes</p>
+
+    <div class="slider-block">
+      <div class="slider-header">
+        <label for="margin_dist">Tu margen → distribuidor (TSTD)</label>
+        <span class="slider-badge" id="val_dist">30%</span>
+      </div>
+      <input type="range" id="margin_dist" min="1" max="70" step="1" value="30" />
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-header">
+        <label for="margin_canal">Margen tienda → cliente (PVP)</label>
+        <span class="slider-badge" id="val_canal">20%</span>
+      </div>
+      <input type="range" id="margin_canal" min="1" max="70" step="1" value="20" />
+    </div>
+  </div>
+
+  <div class="results-grid">
+    <div class="result-card neutral">
+      <p class="rlabel">TSTD</p>
+      <p class="rprice" id="r_tstd">—</p>
+    </div>
+    <div class="result-card blue">
+      <p class="rlabel">PVP</p>
+      <p class="rprice" id="r_pvp">—</p>
+    </div>
+  </div>
+
+  <!-- Resumen de márgenes -->
+  <div class="margins-grid">
+    <div class="margin-pill neutral">
+      <p class="mlabel">Tu margen</p>
+      <p class="mval" id="m_tuyo_eur">—</p>
+      <p class="msub" id="m_tuyo">sobre TSTD</p>
+    </div>
+    <div class="margin-pill blue">
+      <p class="mlabel">Margen tienda</p>
+      <p class="mval" id="m_canal_eur">—</p>
+      <p class="msub" id="m_canal">tienda → cliente</p>
+    </div>
+    <div class="margin-pill green">
+      <p class="mlabel">Tu margen s/PVP</p>
+      <p class="mval" id="m_total_eur">—</p>
+      <p class="msub" id="m_total">coste → PVP</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Cadena completa</p>
+    <div class="chain-steps">
+      <div class="chain-step">
+        <p class="cname">Coste</p>
+        <p class="cprice" id="c_cost">—</p>
+      </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-step">
+        <p class="cname">TSTD</p>
+        <p class="cprice" id="c_tstd">—</p>
+      </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-step">
+        <p class="cname">PVP</p>
+        <p class="cprice" id="c_pvp">—</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="tip">Márgenes calculados sobre coste (markup)</p>
+
+</div>
+
+<script>
+  function fmt(n) {
+    return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  }
+  function pct(n) {
+    return n.toFixed(1) + '%';
+  }
+
+  function recalc() {
+    const cost = parseFloat(document.getElementById('cost').value) || 0;
+    const mDist = parseInt(document.getElementById('margin_dist').value);
+    const mCanal = parseInt(document.getElementById('margin_canal').value);
+
+    document.getElementById('val_dist').textContent = mDist + '%';
+    document.getElementById('val_canal').textContent = mCanal + '%';
+
+    const tstd = cost * (1 + mDist / 100);
+    const pvp = tstd * (1 + mCanal / 100);
+
+    const bTuyo = tstd - cost;
+    const bCanal = pvp - tstd;
+    const mTotalPct = (pvp - cost) / cost * 100;
+    const bTotal = pvp - cost;
+
+    // Resultados principales
+    document.getElementById('r_tstd').textContent = fmt(tstd);
+    document.getElementById('r_pvp').textContent = fmt(pvp);
+
+    // Píldoras de márgenes
+    document.getElementById("m_tuyo").textContent = mDist + "%";
+    document.getElementById('m_tuyo_eur').textContent = '+' + fmt(bTuyo);
+
+    document.getElementById('m_canal').textContent = mCanal + '%';
+    document.getElementById('m_canal_eur').textContent = '+' + fmt(bCanal);
+
+    document.getElementById('m_total').textContent = pct(mTotalPct);
+    document.getElementById('m_total_eur').textContent = '+' + fmt(bTotal);
+
+    // Cadena
+    document.getElementById('c_cost').textContent = fmt(cost);
+    document.getElementById('c_tstd').textContent = fmt(tstd);
+    document.getElementById('c_pvp').textContent = fmt(pvp);
+  }
+
+  document.getElementById('cost').addEventListener('input', recalc);
+  document.getElementById('margin_dist').addEventListener('input', recalc);
+  document.getElementById('margin_canal').addEventListener('input', recalc);
+
+  recalc();
+
+  if ('serviceWorker' in navigator) {
+    const sw = `
+      const CACHE = 'calc-v2';
+      self.addEventListener('install', e => e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(['/']))
+      ));
+      self.addEventListener('fetch', e => e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request))
+      ));
+    `;
+    const blob = new Blob([sw], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob));
+  }
+</script>
+
+</body>
+</html>
