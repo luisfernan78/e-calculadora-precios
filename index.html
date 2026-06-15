@@ -94,13 +94,16 @@
       color: var(--text2); margin-bottom: 1rem;
     }
 
+    /* Input coste */
     .cost-input-wrap {
       display: flex; align-items: center;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       overflow: hidden;
+      transition: border-color 0.15s;
     }
+    .cost-input-wrap.error { border-color: var(--accent); }
     .cost-input-wrap input {
       flex: 1; border: none; background: transparent;
       color: var(--text); font-size: 28px; font-weight: 500;
@@ -113,7 +116,13 @@
       font-size: 22px; font-weight: 500;
       color: var(--text2); padding-right: 1rem;
     }
+    .input-error-msg {
+      font-size: 12px; color: var(--accent);
+      margin-top: 6px; display: none;
+    }
+    .input-error-msg.visible { display: block; }
 
+    /* Sliders */
     .slider-block { margin-bottom: 1.25rem; }
     .slider-block:last-child { margin-bottom: 0; }
 
@@ -155,6 +164,35 @@
       cursor: pointer;
     }
 
+    /* Descuento */
+    .discount-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 1.25rem; padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .discount-row label { font-size: 14px; color: var(--text); flex: 1; }
+    .discount-input-wrap {
+      display: flex; align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .discount-input-wrap input {
+      border: none; background: transparent;
+      color: var(--text); font-size: 16px; font-weight: 600;
+      padding: 6px 4px 6px 10px; outline: none;
+      width: 52px; text-align: right;
+      -moz-appearance: textfield;
+    }
+    .discount-input-wrap input::-webkit-outer-spin-button,
+    .discount-input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .discount-input-wrap .pct-label {
+      font-size: 14px; font-weight: 500;
+      color: var(--text2); padding: 6px 10px 6px 4px;
+    }
+
+    /* Resultados */
     .results-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -192,7 +230,14 @@
     .blue .rmeta { color: var(--blue-text); }
     .accent .rmeta { color: var(--accent-text); }
 
-    /* Margen resumen — 3 columnas */
+    /* TSTD con descuento — fila extra */
+    .result-card .rprice-discount {
+      font-size: 13px; font-weight: 500;
+      color: var(--accent-text);
+      margin-top: 2px;
+    }
+
+    /* Márgenes 3 columnas */
     .margins-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -252,6 +297,25 @@
       padding: 0 4px; color: var(--text2); font-size: 14px; flex-shrink: 0;
     }
 
+    /* Botón copiar */
+    .copy-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; margin-top: 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 14px; font-weight: 500; color: var(--text);
+      cursor: pointer; transition: background 0.15s, color 0.15s;
+    }
+    .copy-btn:active { background: var(--border); }
+    .copy-btn.copied {
+      background: var(--green-bg);
+      border-color: var(--green);
+      color: var(--green-text);
+    }
+    .copy-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
     .tip {
       font-size: 12px; color: var(--text2);
       text-align: center; padding-top: 0.5rem;
@@ -269,14 +333,17 @@
 
 <div class="container">
 
+  <!-- Coste -->
   <div class="card">
     <p class="card-title">Coste</p>
-    <div class="cost-input-wrap">
+    <div class="cost-input-wrap" id="cost_wrap">
       <input type="number" id="cost" value="100" min="0" step="0.01" inputmode="decimal" aria-label="Coste en euros" />
       <span class="currency">€</span>
     </div>
+    <p class="input-error-msg" id="cost_error">El coste no puede ser negativo</p>
   </div>
 
+  <!-- Márgenes + Descuento -->
   <div class="card">
     <p class="card-title">Márgenes</p>
 
@@ -303,12 +370,23 @@
       </div>
       <input type="range" id="iva" min="0" max="30" step="1" value="21" />
     </div>
+
+    <!-- Descuento -->
+    <div class="discount-row">
+      <label for="discount">Descuento sobre TSTD</label>
+      <div class="discount-input-wrap">
+        <input type="number" id="discount" value="0" min="0" max="99" step="1" inputmode="numeric" aria-label="Descuento en porcentaje" />
+        <span class="pct-label">%</span>
+      </div>
+    </div>
   </div>
 
+  <!-- Resultados principales -->
   <div class="results-grid">
     <div class="result-card neutral">
       <p class="rlabel">TSTD</p>
       <p class="rprice" id="r_tstd">—</p>
+      <p class="rprice-discount" id="r_tstd_dto" style="display:none"></p>
     </div>
     <div class="result-card blue">
       <p class="rlabel">PVP</p>
@@ -316,7 +394,7 @@
     </div>
   </div>
 
-  <!-- Resumen de márgenes -->
+  <!-- Píldoras de márgenes -->
   <div class="margins-grid">
     <div class="margin-pill neutral">
       <p class="mlabel">Tu margen</p>
@@ -335,6 +413,7 @@
     </div>
   </div>
 
+  <!-- Cadena completa -->
   <div class="card">
     <p class="card-title">Cadena completa</p>
     <div class="chain-steps">
@@ -359,72 +438,134 @@
         <p class="cdelta" id="c_ivaval">—</p>
       </div>
     </div>
+
+    <button class="copy-btn" id="copy_btn" aria-label="Copiar resumen">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="5" width="9" height="9" rx="2"/>
+        <path d="M11 5V3a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+      </svg>
+      <span id="copy_label">Copiar resumen</span>
+    </button>
   </div>
 
-  <p class="tip">Márgenes calculados sobre coste (markup)</p>
+  <p class="tip">Márgenes calculados sobre precio de venta</p>
 
 </div>
 
 <script>
+  const elCost     = document.getElementById('cost');
+  const elDist     = document.getElementById('margin_dist');
+  const elCanal    = document.getElementById('margin_canal');
+  const elIva      = document.getElementById('iva');
+  const elDiscount = document.getElementById('discount');
+
   function fmt(n) {
     return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
   }
-  function pct(n) {
-    return n.toFixed(1) + '%';
-  }
+  function pct(n) { return n.toFixed(1) + '%'; }
 
   function recalc() {
-    const cost = parseFloat(document.getElementById('cost').value) || 0;
-    const mDist = parseInt(document.getElementById('margin_dist').value);
-    const mCanal = parseInt(document.getElementById('margin_canal').value);
-    const ivaVal = parseInt(document.getElementById('iva').value);
+    const rawCost = parseFloat(elCost.value);
+    const cost    = Math.max(0, isNaN(rawCost) ? 0 : rawCost);
+    const mDist   = parseInt(elDist.value);
+    const mCanal  = parseInt(elCanal.value);
+    const ivaVal  = parseInt(elIva.value);
+    const dto     = Math.min(99, Math.max(0, parseInt(elDiscount.value) || 0));
 
-    document.getElementById('val_dist').textContent = mDist + '%';
+    // Validación coste negativo
+    const isNeg = rawCost < 0;
+    document.getElementById('cost_wrap').classList.toggle('error', isNeg);
+    document.getElementById('cost_error').classList.toggle('visible', isNeg);
+
+    // Badges sliders
+    document.getElementById('val_dist').textContent  = mDist + '%';
     document.getElementById('val_canal').textContent = mCanal + '%';
-    document.getElementById('val_iva').textContent = ivaVal + '%';
+    document.getElementById('val_iva').textContent   = ivaVal + '%';
 
-    const tstd = cost * (1 + mDist / 100);
-    const pvp = tstd * (1 + mCanal / 100);
+    // Fórmula margen real: precio = coste / (1 - margen)
+    const tstd = cost / (1 - mDist / 100);
+    const pvp  = tstd / (1 - mCanal / 100);
 
-    const bTuyo = tstd - cost;
-    const bCanal = pvp - tstd;
-    const mTotalPct = (pvp - cost) / cost * 100;
-    const bTotal = pvp - cost;
+    // Descuento sobre TSTD
+    const tstdDto = tstd * (1 - dto / 100);
+
+    // Beneficios
+    const bTuyo    = tstd - cost;
+    const bCanal   = pvp - tstd;
+    const bTotal   = pvp - cost;
+    const mTotalPct = (pvp - cost) / pvp * 100;
 
     // Resultados principales
     document.getElementById('r_tstd').textContent = fmt(tstd);
+    const dtoEl = document.getElementById('r_tstd_dto');
+    if (dto > 0) {
+      dtoEl.textContent = '−' + dto + '% → ' + fmt(tstdDto);
+      dtoEl.style.display = 'block';
+    } else {
+      dtoEl.style.display = 'none';
+    }
     document.getElementById('r_pvp').textContent = fmt(pvp);
 
-    // Píldoras de márgenes
-    document.getElementById("m_tuyo").textContent = mDist + "%";
+    // Píldoras
+    document.getElementById('m_tuyo').textContent     = pct(mDist);
     document.getElementById('m_tuyo_eur').textContent = '+' + fmt(bTuyo);
-
-    document.getElementById('m_canal').textContent = mCanal + '%';
+    document.getElementById('m_canal').textContent    = pct(mCanal);
     document.getElementById('m_canal_eur').textContent = '+' + fmt(bCanal);
-
-    document.getElementById('m_total').textContent = pct(mTotalPct);
+    document.getElementById('m_total').textContent    = pct(mTotalPct);
     document.getElementById('m_total_eur').textContent = '+' + fmt(bTotal);
 
     // Cadena
-    const IVA = ivaVal / 100;
-    const pvpIva = pvp * (1 + IVA);
-    document.getElementById('c_cost').textContent = fmt(cost);
-    document.getElementById('c_tstd').textContent = fmt(tstd);
-    document.getElementById('c_pvp').textContent = fmt(pvp);
+    const pvpIva = pvp * (1 + ivaVal / 100);
+    document.getElementById('c_cost').textContent   = fmt(cost);
+    document.getElementById('c_tstd').textContent   = fmt(tstd);
+    document.getElementById('c_pvp').textContent    = fmt(pvp);
     document.getElementById('c_pvpiva').textContent = fmt(pvpIva);
-    document.getElementById('c_ivaval').textContent = '+' + fmt(pvp * IVA) + ' IVA';
+    document.getElementById('c_ivaval').textContent = '+' + fmt(pvp * ivaVal / 100) + ' IVA';
   }
 
-  document.getElementById('cost').addEventListener('input', recalc);
-  document.getElementById('margin_dist').addEventListener('input', recalc);
-  document.getElementById('margin_canal').addEventListener('input', recalc);
-  document.getElementById('iva').addEventListener('input', recalc);
+  // Copiar resumen
+  document.getElementById('copy_btn').addEventListener('click', () => {
+    const cost   = parseFloat(elCost.value) || 0;
+    const mDist  = parseInt(elDist.value);
+    const mCanal = parseInt(elCanal.value);
+    const ivaVal = parseInt(elIva.value);
+    const dto    = parseInt(elDiscount.value) || 0;
+
+    const tstd   = cost / (1 - mDist / 100);
+    const pvp    = tstd / (1 - mCanal / 100);
+    const pvpIva = pvp * (1 + ivaVal / 100);
+    const tstdDto = dto > 0 ? tstd * (1 - dto / 100) : null;
+
+    const fmtPlain = n => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+    let text = `Coste: ${fmtPlain(cost)} → TSTD: ${fmtPlain(tstd)}`;
+    if (tstdDto !== null) text += ` (−${dto}% → ${fmtPlain(tstdDto)})`;
+    text += ` → PVP: ${fmtPlain(pvp)} → PVP+IVA: ${fmtPlain(pvpIva)}`;
+    text += `\nMárgenes: ${mDist}% + ${mCanal}% | IVA: ${ivaVal}%`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy_btn');
+      const lbl = document.getElementById('copy_label');
+      btn.classList.add('copied');
+      lbl.textContent = 'Copiado';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        lbl.textContent = 'Copiar resumen';
+      }, 2000);
+    });
+  });
+
+  elCost.addEventListener('input', recalc);
+  elDist.addEventListener('input', recalc);
+  elCanal.addEventListener('input', recalc);
+  elIva.addEventListener('input', recalc);
+  elDiscount.addEventListener('input', recalc);
 
   recalc();
 
   if ('serviceWorker' in navigator) {
     const sw = `
-      const CACHE = 'calc-v2';
+      const CACHE = 'calc-v3';
       self.addEventListener('install', e => e.waitUntil(
         caches.open(CACHE).then(c => c.addAll(['/']))
       ));
